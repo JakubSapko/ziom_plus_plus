@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++20 -Iinclude
 SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o)
-EXEC = my_program
+EXEC = ziom.out
 
 all: $(EXEC)
 

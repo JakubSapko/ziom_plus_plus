@@ -1,2 +1,2 @@
 make
-./my_program
+./ziom.out
