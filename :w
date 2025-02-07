@@ -6,23 +6,25 @@ int main(int argc, char **argv) {
 
   argv = app.ensure_utf8(argv);
 
-  std::string api_key;
+  std::optional<std::string> api_key;
   CLI::Option &cfg_opt =
       *app.add_option("--config", api_key,
                       "An OpenAI API key that will be used to "
                       "generate the commit message")
-           ->expected(0, 1);
+           ->expected(0, 1)
 
-  try {
+               try {
     app.parse(argc, argv);
   } catch (const CLI::ParseError &e) {
     return app.exit(e);
   }
+  std::cout << &cfg_opt << std::endl;
+  std::cout << *api_key << std::endl;
   if (cfg_opt.count() > 0) {
-    if (api_key != "") {
-      std::cout << "API Key provided: " << api_key << std::endl;
+    if (cfg_opt.count() == 1 && api_key.has_value()) {
+      std::cout << "API Key provided: " << *api_key << std::endl;
     } else {
-      std::cout << "No API Key provided!" << std::endl;
+      std::cout << "No bitches?" << std::endl;
     }
   }
   return 0;
