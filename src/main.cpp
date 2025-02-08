@@ -1,3 +1,4 @@
+#include "config.h"
 #include <CLI11.hpp>
 
 int main(int argc, char **argv) {
@@ -21,9 +22,12 @@ int main(int argc, char **argv) {
   if (cfg_opt.count() > 0) {
     if (api_key != "") {
       std::cout << "API Key provided: " << api_key << std::endl;
+      Config cfg = Config(api_key);
+      std::cout << cfg;
     } else {
       std::cout << "No API Key provided!" << std::endl;
     }
   }
+
   return 0;
 }
