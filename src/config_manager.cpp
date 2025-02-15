@@ -1,5 +1,6 @@
 #include "config_manager.h"
 #include "config.h"
+#include "utils.h"
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -34,8 +35,13 @@ json ConfigManager::deserialize_config(std::string &file_path) {
    * If the file was empty, it return an empty json object.
    */
   if (!std::filesystem::is_regular_file(file_path)) {
-    this->create_config_file(file_path);
-    return json::object();
+    bool fileCreatedSuccessfully = this->create_config_file(file_path);
+    if (!fileCreatedSuccessfully) {
+      std::cerr << "AAAAAAA";
+      exit(1);
+    }
+    json user_data = this->user_create_config();
+    return user_data;
   }
 
   std::ifstream input_file(file_path);
@@ -85,3 +91,18 @@ Config ConfigManager::create_config(json &cfg_data) {
 
 // Delete before prod
 Config *ConfigManager::get_config() { return &this->config; }
+
+json ConfigManager::user_create_config() {
+  std::string apiKey;
+  std::cout << "Provide your OpenAI API key: \n";
+  std::cin >> apiKey;
+  if (apiKey.empty()) {
+    std::cerr << "No API Key provided!\n";
+    exit(0);
+  }
+  std::string username{getUser()};
+  json user_data;
+  user_data["apiKey"] = apiKey;
+  user_data["username"] = username;
+  return user_data;
+}

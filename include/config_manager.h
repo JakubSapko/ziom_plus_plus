@@ -19,4 +19,5 @@ public:
   Config *get_config();
   json deserialize_config(std::string &file_path);
   bool serialize_config();
+  json user_create_config();
 };
