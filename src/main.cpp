@@ -2,7 +2,7 @@
 #include <CLI11.hpp>
 
 int main() {
-  ConfigManager config_manager = ConfigManager();
+  ConfigManager config_manager;
   auto cfg = config_manager.get_config();
   std::cout << *cfg;
   exit(1);

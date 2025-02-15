@@ -14,21 +14,25 @@ ConfigManager::ConfigManager() {
 
 std::filesystem::path ConfigManager::create_ziom_path() {
   const char *homeDir = std::getenv("HOME");
+  if (!homeDir) {
+    std::cerr << "HOME env variable is not set\n";
+    exit(1);
+  }
   std::filesystem::path homeDirPath = std::filesystem::path(homeDir);
   return homeDirPath / ".ziom";
 }
 
-bool ConfigManager::create_config_file(std::string &file_path) {
+bool ConfigManager::create_config_file(const std::filesystem::path &file_path) {
   std::ofstream outfile(file_path);
   if (!outfile.is_open()) {
     std::cerr << "Error creating file at: " << file_path << "\n";
-    return 0;
+    return false;
   }
   outfile.close();
-  return 1;
+  return true;
 }
 
-json ConfigManager::deserialize_config(std::string &file_path) {
+json ConfigManager::deserialize_config(const std::filesystem::path file_path) {
   /* Deserializes config found in '~/.ziom'.
    * If the file does not exist, it creates a new one and returns an empty json
    * object.
@@ -73,24 +77,20 @@ bool ConfigManager::serialize_config() {
   std::ofstream output_file(this->filePath);
   if (!output_file.is_open()) {
     std::cerr << "Error opening file for writing\n";
-    return 1;
+    return false;
   }
   output_file << std::setw(4) << config_data << std::endl;
   output_file.close();
-  return 0;
+  return true;
 }
 
-Config ConfigManager::create_config(json &cfg_data) {
-  Config cfg{};
+Config ConfigManager::create_config(const json &cfg_data) {
   if (cfg_data.count("apiKey") && cfg_data.count("username")) {
     Config cfg{cfg_data["apiKey"], cfg_data["username"]};
     return cfg;
   }
-  return cfg;
+  return Config{};
 }
-
-// Delete before prod
-Config *ConfigManager::get_config() { return &this->config; }
 
 json ConfigManager::user_create_config() {
   std::string apiKey;
