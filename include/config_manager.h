@@ -7,7 +7,7 @@ using json = nlohmann::json;
 
 class ConfigManager {
 private:
-  Config *config;
+  Config config;
   std::string filePath;
 
   bool create_config_file(std::string &file_path);

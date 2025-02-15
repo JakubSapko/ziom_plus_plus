@@ -8,6 +8,7 @@
 ConfigManager::ConfigManager() {
   this->filePath = this->create_ziom_path();
   json config_data = this->deserialize_config(this->filePath);
+  this->config = this->create_config(config_data);
 }
 
 std::filesystem::path ConfigManager::create_ziom_path() {
@@ -58,6 +59,9 @@ json ConfigManager::deserialize_config(std::string &file_path) {
 }
 
 Config ConfigManager::create_config(json &cfg_data) {
-  Config cfg{cfg_data["apiKey"], cfg_data["username"]};
+  Config cfg{};
+  if (cfg_data.count("apiKey") && cfg_data.count("username")) {
+    Config cfg{cfg_data["apiKey"], cfg_data["username"]};
+  }
   return cfg;
 }
