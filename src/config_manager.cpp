@@ -59,6 +59,21 @@ json ConfigManager::deserialize_config(std::string &file_path) {
   return config_data;
 }
 
+bool ConfigManager::serialize_config() {
+  json config_data;
+  config_data["apiKey"] = this->config.apiKey;
+  config_data["username"] = this->config.username;
+
+  std::ofstream output_file(this->filePath);
+  if (!output_file.is_open()) {
+    std::cerr << "Error opening file for writing\n";
+    return 1;
+  }
+  output_file << std::setw(4) << config_data << std::endl;
+  output_file.close();
+  return 0;
+}
+
 Config ConfigManager::create_config(json &cfg_data) {
   Config cfg{};
   if (cfg_data.count("apiKey") && cfg_data.count("username")) {
@@ -68,4 +83,5 @@ Config ConfigManager::create_config(json &cfg_data) {
   return cfg;
 }
 
+// Delete before prod
 Config *ConfigManager::get_config() { return &this->config; }
