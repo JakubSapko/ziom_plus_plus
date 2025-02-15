@@ -1,14 +1,12 @@
 #pragma once
-
 #include <string>
 
 class Config {
 private:
-  std::string filePath;
   std::string apiKey;
   std::string username;
 
 public:
-  Config(std::string apiKey);
+  Config(std::string apiKey, std::string username);
   friend std::ostream &operator<<(std::ostream &os, const Config &cfg);
 };
