@@ -16,6 +16,7 @@ private:
 
 public:
   ConfigManager();
+  Config *get_config();
   json deserialize_config(std::string &file_path);
   void serialize_config();
 };

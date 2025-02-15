@@ -3,7 +3,8 @@
 
 int main() {
   ConfigManager config_manager = ConfigManager();
-
+  auto cfg = config_manager.get_config();
+  std::cout << *cfg;
   exit(1);
   /*CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
                "version of Ziom CLI!"};

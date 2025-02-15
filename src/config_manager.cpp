@@ -55,6 +55,7 @@ json ConfigManager::deserialize_config(std::string &file_path) {
     std::cerr << "JSON type error: " << e.what() << "\n";
   }
   input_file.close();
+  std::cout << config_data;
   return config_data;
 }
 
@@ -62,6 +63,9 @@ Config ConfigManager::create_config(json &cfg_data) {
   Config cfg{};
   if (cfg_data.count("apiKey") && cfg_data.count("username")) {
     Config cfg{cfg_data["apiKey"], cfg_data["username"]};
+    return cfg;
   }
   return cfg;
 }
+
+Config *ConfigManager::get_config() { return &this->config; }
