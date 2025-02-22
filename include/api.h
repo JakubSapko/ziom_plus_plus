@@ -19,5 +19,5 @@ private:
   static size_t writeCallback(void *contents, size_t size, size_t nmemb,
                               std::string *output);
   void setupCurl(CURL *curl, const std::string &url,
-                 std::string &responseBuffer);
+                 std::string &responseBuffer, curl_slist &headers);
 };

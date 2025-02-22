@@ -5,7 +5,10 @@
 int main() {
   ConfigManager config_manager;
   API api(config_manager.get_config());
-  api.get();
+  auto val = api.get();
+  std::cout << val << "\n";
+  size_t len = val["choices"].size();
+  std::cout << val["choices"][len - 1]["message"]["content"];
   exit(1);
   /*CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
                "version of Ziom CLI!"};

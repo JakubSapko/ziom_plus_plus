@@ -65,7 +65,6 @@ json ConfigManager::deserialize_config(const std::filesystem::path file_path) {
     std::cerr << "JSON type error: " << e.what() << "\n";
   }
   input_file.close();
-  std::cout << config_data;
   return config_data;
 }
 
