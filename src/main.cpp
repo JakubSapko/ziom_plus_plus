@@ -1,10 +1,11 @@
+#include "api.h"
 #include "config_manager.h"
 #include <CLI11.hpp>
 
 int main() {
   ConfigManager config_manager;
-  auto cfg = config_manager.get_config();
-  std::cout << *cfg;
+  API api(config_manager.get_config());
+  api.get();
   exit(1);
   /*CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
                "version of Ziom CLI!"};

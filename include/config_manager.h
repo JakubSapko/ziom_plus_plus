@@ -13,6 +13,7 @@ public:
   json deserialize_config(const std::filesystem::path file_path);
   bool serialize_config();
   json user_create_config();
+  Config *get_config();
 
 private:
   Config config;

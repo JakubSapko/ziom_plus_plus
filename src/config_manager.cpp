@@ -106,3 +106,5 @@ json ConfigManager::user_create_config() {
   user_data["username"] = username;
   return user_data;
 }
+
+Config *ConfigManager::get_config() { return &this->config; }
