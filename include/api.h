@@ -10,7 +10,8 @@ class API {
 
 public:
   API(Config *cfg);
-  json get();
+  ~API();
+  json post();
 
 private:
   CURL *curl;
@@ -18,6 +19,7 @@ private:
   std::string url;
   static size_t writeCallback(void *contents, size_t size, size_t nmemb,
                               std::string *output);
-  void setupCurl(CURL *curl, const std::string &url,
-                 std::string &responseBuffer, curl_slist &headers);
+  void setupCurl(CURL *curl, const std::string &url, json reqBody,
+                 std::string &responseBuffer, curl_slist *headers);
+  curl_slist *setupHeaders();
 };
