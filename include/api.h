@@ -11,7 +11,7 @@ class API {
 public:
   API(Config *cfg);
   ~API();
-  json post();
+  json post(std::string_view diff);
 
 private:
   CURL *curl;

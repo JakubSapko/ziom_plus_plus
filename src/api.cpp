@@ -14,7 +14,7 @@ API::API(Config *cfg) {
   this->config = cfg;
 }
 
-json API::post() {
+json API::post(std::string_view diff) {
   std::string responseBuffer;
 
   curl_slist *headers = this->setupHeaders();
@@ -23,7 +23,7 @@ json API::post() {
   json req = {{"model", "gpt-4o-mini"},
               {"messages",
                {{{"role", "system"}, {"content", apiConstants::system_prompt}},
-                {{"role", "user"}, {"content", "say this is a test"}}}},
+                {{"role", "user"}, {"content", diff}}}},
               {"temperature", 0.7}};
 
   this->setupCurl(this->curl, this->url, req, responseBuffer, headers);
