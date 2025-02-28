@@ -25,13 +25,11 @@ json API::post() {
                {{{"role", "system"}, {"content", apiConstants::system_prompt}},
                 {{"role", "user"}, {"content", "say this is a test"}}}},
               {"temperature", 0.7}};
-  std::cout << "Req:" << req << "\n";
 
   this->setupCurl(this->curl, this->url, req, responseBuffer, headers);
 
   CURLcode res = curl_easy_perform(this->curl);
 
-  std::cout << "TEST" << std::endl;
   if (res != CURLE_OK) {
     std::cerr << "cURL error: " << curl_easy_strerror(res) << std::endl;
     return json();
