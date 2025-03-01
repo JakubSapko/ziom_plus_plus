@@ -1,18 +1,18 @@
 #include "api.h"
 #include "config_manager.h"
 #include "git.h"
+#include "ziom.h"
 #include <CLI11.hpp>
 
+// TODO: delete replizer?
 int main() {
+
   GitHandler gitHandler;
   ConfigManager config_manager;
   API api(config_manager.get_config());
-  auto val = api.post();
-  /*std::cout << val << "\n";
-  size_t len = val["choices"].size();
-  std::cout << val["choices"][len - 1]["message"]["content"];
-  */
+  Ziom ziom(api, gitHandler);
 
+  gitHandler.amendMessage();
   exit(1);
   /*CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
                "version of Ziom CLI!"};
