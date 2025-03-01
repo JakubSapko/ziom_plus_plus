@@ -6,11 +6,9 @@ public:
   GitHandler();
   bool isRepo;
   std::string getGitDifference();
-  void createCommit(std::string commitMsg);
-  void mutateCommitMsg(std::string commitMsg);
   void pushChanges();
+  void amendMessage();
 
 private:
   bool checkIfInRepo();
-  std::string commitMsg;
 };
