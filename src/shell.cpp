@@ -1,8 +1,11 @@
 #include "shell.h"
 
+#include <fcntl.h> // posix_openpt, O_RDWR
 #include <string>
-#include <sys/wait.h> // waitpid
-#include <unistd.h>   // fork, pipe, dup2, execvp
+#include <sys/ioctl.h> // ioctl
+#include <sys/wait.h>  // waitpid
+#include <termios.h>
+#include <unistd.h> // fork, pipe, dup2, execvp
 #include <vector>
 
 std::string execCommand(const std::vector<std::string> &command) {
@@ -57,4 +60,74 @@ std::string execCommand(const std::vector<std::string> &command) {
   }
 
   return output;
+}
+
+// Enable raw mode on the terminal
+void enableRawMode(int fd, struct termios &orig_termios) {
+  struct termios raw;
+  tcgetattr(fd, &orig_termios); // Get current terminal attributes
+  raw = orig_termios;
+  raw.c_lflag &= ~(ECHO | ICANON); // Disable echo & canonical mode
+  tcsetattr(fd, TCSAFLUSH, &raw);  // Apply changes
+}
+
+// Restore original terminal settings
+void disableRawMode(int fd, struct termios &orig_termios) {
+  tcsetattr(fd, TCSAFLUSH, &orig_termios);
+}
+
+void runInteractiveCommand(const std::vector<std::string> &command) {
+  int master_fd;
+  pid_t pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
+
+  if (pid == -1) {
+    throw std::runtime_error("Fork failed");
+  }
+
+  if (pid == 0) { // Child process
+    // Convert command vector to execvp format
+    std::vector<char *> args;
+    for (const auto &arg : command) {
+      args.push_back(const_cast<char *>(arg.c_str()));
+    }
+    args.push_back(nullptr);
+
+    execvp(args[0], args.data());
+    _exit(1);
+  }
+
+  // Parent process: Forward input/output
+  fd_set fds;
+  char buffer[256];
+  ssize_t bytesRead;
+
+  while (true) {
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    FD_SET(master_fd, &fds);
+
+    int max_fd = std::max(STDIN_FILENO, master_fd);
+    if (select(max_fd + 1, &fds, nullptr, nullptr, nullptr) == -1) {
+      break;
+    }
+
+    if (FD_ISSET(STDIN_FILENO, &fds)) {
+      bytesRead = read(STDIN_FILENO, buffer, sizeof(buffer));
+      if (bytesRead > 0) {
+        write(master_fd, buffer, bytesRead);
+      }
+    }
+
+    if (FD_ISSET(master_fd, &fds)) {
+      bytesRead = read(master_fd, buffer, sizeof(buffer));
+      if (bytesRead > 0) {
+        write(STDOUT_FILENO, buffer, bytesRead);
+      } else {
+        break; // Child process exited
+      }
+    }
+  }
+
+  close(master_fd);
+  waitpid(pid, nullptr, 0);
 }
