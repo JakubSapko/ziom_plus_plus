@@ -6,6 +6,8 @@
 #include <sys/wait.h>  // waitpid
 #include <termios.h>
 #include <unistd.h> // fork, pipe, dup2, execvp
+#include <util.h>
+#include <utmp.h>
 #include <vector>
 
 std::string execCommand(const std::vector<std::string> &command) {
