@@ -1,6 +1,6 @@
 // #include "api.h"
 #include "config_manager.h"
-// #include "git.h"
+#include "git.h"
 // #include "ziom.h"
 #include <CLI11.hpp>
 
@@ -45,15 +45,24 @@ void handle_default(ConfigManager &cfg_manager) {
     exit(EXIT_FAILURE);
   }
 }
-void handle_change() {};
+
+void handle_change(GitHandler &git_handler) {
+  try {
+    git_handler.amendMessage();
+    return;
+  } catch (std::exception &e) {
+    std::cerr << "Couldn't amend your message, sorry!\n";
+    return;
+  }
+};
 
 int main(int argc, char *argv[]) {
   // Dependencies init
   ConfigManager config_manager;
 
   // API api;
-  // GitHandler gitHandler;
-  // Ziom ziom(api, gitHandler);
+  GitHandler git_handler;
+  // Ziom ziom(api, git_handler);
 
   // App init
   CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
@@ -69,9 +78,9 @@ int main(int argc, char *argv[]) {
       [&key, &config_manager]() { handle_config(key, config_manager); });
 
   // Change
-  // auto change = app.add_subcommand(
-  //"change", "Provides the amend window for your current commit message");
-  // change->callback([]() { handle_change(); });
+  auto change = app.add_subcommand(
+      "change", "Provides the amend window for your current commit message");
+  change->callback([&git_handler]() { handle_change(git_handler); });
 
   // ziom
   // app.callback([&config_manager]() { handle_default(config_manager); });
