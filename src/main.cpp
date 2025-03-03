@@ -1,7 +1,7 @@
-// #include "api.h"
+#include "api.h"
 #include "config_manager.h"
 #include "git.h"
-// #include "ziom.h"
+#include "ziom.h"
 #include <CLI11.hpp>
 
 void handle_config(std::string key, ConfigManager cfg_manager) {
@@ -35,15 +35,22 @@ void handle_config(std::string key, ConfigManager cfg_manager) {
   return;
 }
 
-void handle_default(ConfigManager &cfg_manager) {
-  auto cfg = cfg_manager.get_config();
-  std::cout << "hendl difolt" << *cfg << "\n";
+void handle_default(ConfigManager &cfg_manager, Ziom &ziom) {
+  json cfg_data = cfg_manager.deserialize_config();
 
-  if (!cfg) {
+  if (cfg_data.is_null()) {
+    return;
+  }
+
+  Config cfg = cfg_manager.create_config(cfg_data);
+
+  if (cfg.apiKey.empty() || cfg.username.empty()) {
     std::cerr << "Your config does not exist! Please first run 'ziom config "
                  "<API_KEY>' to set up your OpenAI API key!\n";
     exit(EXIT_FAILURE);
   }
+
+  ziom.commit();
 }
 
 void handle_change(GitHandler &git_handler) {
@@ -60,9 +67,9 @@ int main(int argc, char *argv[]) {
   // Dependencies init
   ConfigManager config_manager;
 
-  // API api;
+  API api;
   GitHandler git_handler;
-  // Ziom ziom(api, git_handler);
+  Ziom ziom(api, git_handler, config_manager);
 
   // App init
   CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
@@ -83,7 +90,8 @@ int main(int argc, char *argv[]) {
   change->callback([&git_handler]() { handle_change(git_handler); });
 
   // ziom
-  // app.callback([&config_manager]() { handle_default(config_manager); });
+  app.callback(
+      [&config_manager, &ziom]() { handle_default(config_manager, ziom); });
 
   CLI11_PARSE(app, argc, argv);
   return EXIT_SUCCESS;
