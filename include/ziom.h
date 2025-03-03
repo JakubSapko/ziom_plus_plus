@@ -5,11 +5,11 @@
 class Ziom {
 public:
   Ziom(API &api, GitHandler &gh);
-  void createCommitMessage();
+  std::string createCommitMessage();
   void mutateCommitMessage();
+  void commit();
 
 private:
   API &api;
   GitHandler &gh;
-  std::string commitMsg;
 };

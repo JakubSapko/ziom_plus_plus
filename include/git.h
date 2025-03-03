@@ -8,6 +8,7 @@ public:
   std::string getGitDifference();
   void pushChanges();
   void amendMessage();
+  void makeCommit(std::string commitMsg);
 
 private:
   bool checkIfInRepo();

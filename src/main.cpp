@@ -1,49 +1,81 @@
-#include "api.h"
+// #include "api.h"
 #include "config_manager.h"
-#include "git.h"
-#include "ziom.h"
+// #include "git.h"
+// #include "ziom.h"
 #include <CLI11.hpp>
 
-// TODO: delete replizer?
-int main() {
+void handle_config(std::string key, ConfigManager cfg_manager) {
 
-  GitHandler gitHandler;
-  ConfigManager config_manager;
-  API api(config_manager.get_config());
-  Ziom ziom(api, gitHandler);
+  if (key.empty()) {
+    json cfg_data = cfg_manager.deserialize_config();
 
-  gitHandler.amendMessage();
-  exit(1);
-  /*CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
-               "version of Ziom CLI!"};
+    if (cfg_data.is_null()) {
+      return;
+    }
 
-  argv = app.ensure_utf8(argv);
-
-  std::string api_key;
-  CLI::Option &cfg_opt =
-      *app.add_option("--config", api_key,
-                      "An OpenAI API key that will be used to "
-                      "generate the commit message")
-           ->expected(0, 1);
-
-  try {
-    app.parse(argc, argv);
-  } catch (const CLI::ParseError &e) {
-    return app.exit(e);
+    Config cfg = cfg_manager.create_config(cfg_data);
+    std::cout << "Hello " << cfg.username
+              << ", your OpenAI API key is: " << cfg.apiKey
+              << ". I hope you'll have fun using Ziom!\n";
+    return;
   }
 
-  // Logic part - should it be there?
-  // cfg_opt.count > 0 -> ziom --flag <something>
-  if (cfg_opt.count() > 0) {
-    if (api_key != "") {
-      std::cout << "API Key provided: " << api_key << std::endl;
-      Config cfg = Config(api_key);
-      std::cout << cfg;
-    } else {
-      std::cout << "No API Key provided!" << std::endl;
+  try {
+    Config cfg = cfg_manager.create_config(key);
+    bool gotSerialized = cfg_manager.serialize_config(cfg);
+    if (!gotSerialized) {
+      std::cerr << "Couldn't serialize your config, sorry!\n";
+      return;
     }
-  }*/
-  // count == 0 -> ziom
+  } catch (std::exception &e) {
+    std::cerr << "Couldn't create your config, sorry!\n";
+    return;
+  }
 
-  return 0;
+  return;
+}
+
+void handle_default(ConfigManager &cfg_manager) {
+  auto cfg = cfg_manager.get_config();
+  std::cout << "hendl difolt" << *cfg << "\n";
+
+  if (!cfg) {
+    std::cerr << "Your config does not exist! Please first run 'ziom config "
+                 "<API_KEY>' to set up your OpenAI API key!\n";
+    exit(EXIT_FAILURE);
+  }
+}
+void handle_change() {};
+
+int main(int argc, char *argv[]) {
+  // Dependencies init
+  ConfigManager config_manager;
+
+  // API api;
+  // GitHandler gitHandler;
+  // Ziom ziom(api, gitHandler);
+
+  // App init
+  CLI::App app{"Welcome to Ziom++, the faster (and probably less beautiful) "
+               "version of Ziom CLI!"};
+
+  // Config
+  auto config = app.add_subcommand(
+      "config", "Get your current config. Run with additional argument (e.g. "
+                "ziom config <KEY>) to setup your OpenAI API Key");
+  std::string key;
+  config->add_option("API_KEY", key, "OpenAI API Key");
+  config->callback(
+      [&key, &config_manager]() { handle_config(key, config_manager); });
+
+  // Change
+  // auto change = app.add_subcommand(
+  //"change", "Provides the amend window for your current commit message");
+  // change->callback([]() { handle_change(); });
+
+  // ziom
+  // app.callback([&config_manager]() { handle_default(config_manager); });
+
+  CLI11_PARSE(app, argc, argv);
+  return EXIT_SUCCESS;
 }

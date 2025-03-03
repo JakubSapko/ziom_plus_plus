@@ -46,3 +46,11 @@ void GitHandler::amendMessage() {
     throw std::runtime_error("Couldn't invoke amend!");
   }
 }
+
+void GitHandler::makeCommit(std::string commitMsg) {
+  try {
+    std::string _{execCommand({"git", "commit", "-m", commitMsg})};
+  } catch (const std::exception &e) {
+    throw std::runtime_error("Couldn't make commit!");
+  }
+}

@@ -9,13 +9,14 @@ using json = nlohmann::json;
 class API {
 
 public:
-  API(Config *cfg);
+  API();
   ~API();
   json post(std::string_view diff);
+  void set_config(Config &cfg);
 
 private:
   CURL *curl;
-  Config *config;
+  Config config;
   std::string url;
   static size_t writeCallback(void *contents, size_t size, size_t nmemb,
                               std::string *output);

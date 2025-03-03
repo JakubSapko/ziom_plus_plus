@@ -8,9 +8,14 @@
 
 ConfigManager::ConfigManager() {
   this->filePath = this->create_ziom_path();
-  json config_data = this->deserialize_config(this->filePath);
-  this->config = this->create_config(config_data);
+  /*json config_data = this->deserialize_config(this->filePath);
+  if (!(config_data.empty())) {
+    this->config = this->create_config(config_data);
+  }*/
 }
+
+void ConfigManager::set_config(Config cfg) { this->config.emplace(cfg); }
+std::optional<Config> &ConfigManager::get_config() { return this->config; }
 
 std::filesystem::path ConfigManager::create_ziom_path() {
   const char *homeDir = std::getenv("HOME");
@@ -32,26 +37,16 @@ bool ConfigManager::create_config_file(const std::filesystem::path &file_path) {
   return true;
 }
 
-json ConfigManager::deserialize_config(const std::filesystem::path file_path) {
-  /* Deserializes config found in '~/.ziom'.
-   * If the file does not exist, it creates a new one and returns an empty json
-   * object.
-   * If the file was empty, it return an empty json object.
-   */
-  if (!std::filesystem::is_regular_file(file_path)) {
-    bool fileCreatedSuccessfully = this->create_config_file(file_path);
-    if (!fileCreatedSuccessfully) {
-      std::cerr << "AAAAAAA";
-      exit(1);
-    }
-    json user_data = this->user_create_config();
-    return user_data;
-  }
+json ConfigManager::deserialize_config() {
+  /* Deserializes config found in '~/.ziom'. */
+  const std::filesystem::path file_path = this->create_ziom_path();
 
   std::ifstream input_file(file_path);
   if (!input_file.is_open()) {
-    std::cerr << "Error opening file for reading" << "\n";
-    exit(0);
+    std::cerr << "Error opening file for reading. Most likely your config does "
+                 "not exist! Please run 'ziom config' first!"
+              << "\n";
+    return json::object();
   }
 
   json config_data;
@@ -68,10 +63,10 @@ json ConfigManager::deserialize_config(const std::filesystem::path file_path) {
   return config_data;
 }
 
-bool ConfigManager::serialize_config() {
+bool ConfigManager::serialize_config(Config &cfg) {
   json config_data;
-  config_data["apiKey"] = this->config.apiKey;
-  config_data["username"] = this->config.username;
+  config_data["apiKey"] = cfg.apiKey;
+  config_data["username"] = cfg.username;
 
   std::ofstream output_file(this->filePath);
   if (!output_file.is_open()) {
@@ -83,27 +78,29 @@ bool ConfigManager::serialize_config() {
   return true;
 }
 
-Config ConfigManager::create_config(const json &cfg_data) {
-  if (cfg_data.count("apiKey") && cfg_data.count("username")) {
-    Config cfg{cfg_data["apiKey"], cfg_data["username"]};
-    return cfg;
-  }
-  return Config{};
-}
-
-json ConfigManager::user_create_config() {
-  std::string apiKey;
-  std::cout << "Provide your OpenAI API key: \n";
-  std::cin >> apiKey;
+Config ConfigManager::create_config(std::string apiKey) {
   if (apiKey.empty()) {
-    std::cerr << "No API Key provided!\n";
-    exit(0);
+    throw std::runtime_error(
+        "Couldn't create config due to the missing API key!");
   }
   std::string username{getUser()};
-  json user_data;
-  user_data["apiKey"] = apiKey;
-  user_data["username"] = username;
-  return user_data;
+  if (username.empty()) {
+    throw std::runtime_error(
+        "Couldn't create config due to the missing username!");
+  }
+  Config cfg{apiKey, username};
+  return cfg;
 }
 
-Config *ConfigManager::get_config() { return &this->config; }
+Config ConfigManager::create_config(json cfg_data) {
+  if (!(cfg_data.count("apiKey"))) {
+    throw std::runtime_error(
+        "Couldn't create config due to the missing API key!");
+  }
+  if (!(cfg_data.count("username"))) {
+    throw std::runtime_error(
+        "Couldn't create config due to the missing username!");
+  }
+  Config cfg{cfg_data["apiKey"], cfg_data["username"]};
+  return cfg;
+}

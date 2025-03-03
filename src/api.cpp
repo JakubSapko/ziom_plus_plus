@@ -4,15 +4,16 @@
 #include <curl/curl.h>
 #include <iostream>
 
-API::API(Config *cfg) {
+API::API() {
   this->curl = curl_easy_init();
   if (!this->curl) {
     std::cerr << "Failed to initialize cURL\n";
     exit(1);
   }
   this->url = "https://api.openai.com/v1/chat/completions";
-  this->config = cfg;
 }
+
+void API::set_config(Config &cfg) { this->config = cfg; }
 
 json API::post(std::string_view diff) {
   std::string responseBuffer;
@@ -72,7 +73,7 @@ void API::setupCurl(CURL *curl, const std::string &url, json reqBody,
 curl_slist *API::setupHeaders() {
   struct curl_slist *headers = nullptr;
   std::string auth = "Authorization: Bearer";
-  std::string key = this->config->apiKey;
+  std::string key = this->config.apiKey;
   std::string authHeader = auth + " " + key;
   std::string applicationHeader = "Content-Type: application/json";
 
