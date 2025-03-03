@@ -16,7 +16,7 @@ public:
 
 private:
   CURL *curl;
-  Config config;
+  std::optional<Config> config;
   std::string url;
   static size_t writeCallback(void *contents, size_t size, size_t nmemb,
                               std::string *output);
