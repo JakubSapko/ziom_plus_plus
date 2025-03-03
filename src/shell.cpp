@@ -80,6 +80,12 @@ void disableRawMode(int fd, struct termios &orig_termios) {
 
 void runInteractiveCommand(const std::vector<std::string> &command) {
   int master_fd;
+  struct termios orig_termios;
+
+  // Save current terminal settings
+  tcgetattr(STDIN_FILENO, &orig_termios);
+
+  // Create a new PTY
   pid_t pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
 
   if (pid == -1) {
@@ -98,7 +104,10 @@ void runInteractiveCommand(const std::vector<std::string> &command) {
     _exit(1);
   }
 
-  // Parent process: Forward input/output
+  // Parent process: Set non-blocking mode for PTY
+  fcntl(master_fd, F_SETFL, O_NONBLOCK);
+
+  // Terminal interaction loop
   fd_set fds;
   char buffer[256];
   ssize_t bytesRead;
@@ -129,6 +138,9 @@ void runInteractiveCommand(const std::vector<std::string> &command) {
       }
     }
   }
+
+  // Restore original terminal settings
+  tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
 
   close(master_fd);
   waitpid(pid, nullptr, 0);
