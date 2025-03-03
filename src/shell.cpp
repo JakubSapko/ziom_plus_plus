@@ -64,26 +64,20 @@ std::string execCommand(const std::vector<std::string> &command) {
   return output;
 }
 
-// Enable raw mode on the terminal
-void enableRawMode(int fd, struct termios &orig_termios) {
+void setRawMode(int fd, struct termios &original) {
   struct termios raw;
-  tcgetattr(fd, &orig_termios); // Get current terminal attributes
-  raw = orig_termios;
-  raw.c_lflag &= ~(ECHO | ICANON); // Disable echo & canonical mode
-  tcsetattr(fd, TCSAFLUSH, &raw);  // Apply changes
-}
+  tcgetattr(fd, &original);
+  raw = original;
 
-// Restore original terminal settings
-void disableRawMode(int fd, struct termios &orig_termios) {
-  tcsetattr(fd, TCSAFLUSH, &orig_termios);
+  // Disable canonical mode, echo and signals
+  raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+  raw.c_iflag &= ~(ICRNL | IXON);
+  tcsetattr(fd, TCSANOW, &raw);
 }
 
 void runInteractiveCommand(const std::vector<std::string> &command) {
   int master_fd;
   struct termios orig_termios;
-
-  // Save current terminal settings
-  tcgetattr(STDIN_FILENO, &orig_termios);
 
   // Create a new PTY
   pid_t pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
@@ -104,8 +98,8 @@ void runInteractiveCommand(const std::vector<std::string> &command) {
     _exit(1);
   }
 
-  // Parent process: Set non-blocking mode for PTY
-  fcntl(master_fd, F_SETFL, O_NONBLOCK);
+  // Parent process: Set PTY to raw mode
+  setRawMode(STDIN_FILENO, orig_termios);
 
   // Terminal interaction loop
   fd_set fds;
